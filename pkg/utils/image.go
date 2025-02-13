@@ -16,3 +16,13 @@ func WriteToFile(img *image.RGBA, w io.Writer, imageType string) error {
 	}
 	return errors.New("unsupported image type")
 }
+
+func Clamp(n, min, max int) int {
+	if n < min {
+		return min
+	} else if n > max {
+		return max
+	} else {
+		return n
+	}
+}

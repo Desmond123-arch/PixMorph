@@ -2,6 +2,7 @@
 package effects
 
 import (
+	"github.com/Desmond123-arch/pkg/utils"
 	"image"
 	"image/color"
 	_ "image/jpeg"
@@ -54,41 +55,63 @@ func ApplyBoxBlur(img image.Image) *image.RGBA {
 }
 
 func ApplyGaussianBlur(img image.Image) *image.RGBA {
-	ks := 15
-	k := make([]float64, ks*ks)
+	Xbound := img.Bounds().Max.X
+	Ybound := img.Bounds().Max.Y
+	newImage := image.NewRGBA(image.Rect(0, 0, Xbound, Ybound))
+	ksize := 7
+	sigma := 7.0
+
+	kernel := make([][]float64, ksize)
 	var kernelSum float64
-	for i := 0; i < ks; i++ {
-		for j := 0; j < ks; j++ {
-			weight := math.Exp(-(math.Pow(float64(i)-15/2, 2)+math.Pow(float64(j)-15/2, 2))/(2*math.Pow(15/2, 2))) / 2
-			k[i*ks+j] = weight
+	for i := range kernel {
+		kernel[i] = make([]float64, ksize)
+	}
+	center := int(math.Floor(float64(len(kernel) / 2)))
+
+	for i := range len(kernel) {
+		for j := range len(kernel[i]) {
+			x := float64(i - center)
+			y := float64(j - center)
+			weight := math.Exp(-(x*x + y*y) / (2 * sigma * sigma))
+			kernel[i][j] = weight
 			kernelSum += weight
 		}
 	}
 
-	for i := range k {
-		k[i] /= kernelSum
-	}
-
-	dst := image.NewRGBA(img.Bounds())
-	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
-		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
-			var r, g, b, a float64
-			for ky := 0; ky < ks; ky++ {
-				for kx := 0; kx < ks; kx++ {
-					c := img.At(x+kx-ks/2, y+ky-ks/2)
-					r1, g1, b1, a1 := c.RGBA()
-
-					k := k[ky*ks+kx]
-
-					r += float64(r1) * k
-					g += float64(g1) * k
-					b += float64(b1) * k
-					a += float64(a1) * k
-
-				}
-			}
-			dst.SetRGBA(x, y, color.RGBA{R: uint8(r / 257.0), G: uint8(g / 257.0), B: uint8(b / 257.0), A: uint8(a / 257.0)})
+	//normalize kernel
+	for i := range kernel {
+		for j := range kernel[i] {
+			kernel[i][j] /= kernelSum
 		}
 	}
-	return dst
+
+	for x := 0; x < Xbound; x++ {
+		for y := 0; y < Ybound; y++ {
+			var tempSum RGBASum
+			var colorRGBA color.RGBA
+
+			for i := range ksize {
+				for j := range ksize {
+					srcX := x + i - center
+					srcY := y + j - center
+
+					srcX = utils.Clamp(srcX, 0, ksize)
+					srcY = utils.Clamp(srcY, 0, ksize)
+					r, g, b, a := img.At(srcX, srcY).RGBA()
+
+					tempSum.sumRed += uint32(float64(r) * kernel[i][j])
+					tempSum.sumBlue += uint32(float64(b) * kernel[i][j])
+					tempSum.sumGreen += uint32(float64(g) * kernel[i][j])
+					tempSum.sumAlpha += uint32(float64(a) * kernel[i][j])
+				}
+
+			}
+			colorRGBA.R = uint8(tempSum.sumRed / 273 >> 8)
+			colorRGBA.B = uint8(tempSum.sumBlue / 273 >> 8)
+			colorRGBA.G = uint8(tempSum.sumGreen / 273 >> 8)
+			colorRGBA.A = uint8(tempSum.sumAlpha / 273 >> 8)
+		}
+		newImage.SetRGBA(x, y, colorRGBA)
+	}
+	return newImage
 }
