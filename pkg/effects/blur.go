@@ -68,8 +68,8 @@ func ApplyGaussianBlur(img image.Image) *image.RGBA {
 	}
 	center := int(math.Floor(float64(len(kernel) / 2)))
 
-	for i := range len(kernel) {
-		for j := range len(kernel[i]) {
+	for i := 0; i < ksize; i++ {
+		for j := 0; j < ksize; j++ {
 			x := float64(i - center)
 			y := float64(j - center)
 			weight := math.Exp(-(x*x + y*y) / (2 * sigma * sigma))
@@ -90,13 +90,13 @@ func ApplyGaussianBlur(img image.Image) *image.RGBA {
 			var tempSum RGBASum
 			var colorRGBA color.RGBA
 
-			for i := range ksize {
-				for j := range ksize {
+			for i := 0; i < ksize; i++ {
+				for j := 0; j < ksize; j++ {
 					srcX := x + i - center
 					srcY := y + j - center
 
-					srcX = utils.Clamp(srcX, 0, ksize)
-					srcY = utils.Clamp(srcY, 0, ksize)
+					srcX = utils.Clamp(srcX, 0, Xbound-1)
+					srcY = utils.Clamp(srcY, 0, Ybound-1)
 					r, g, b, a := img.At(srcX, srcY).RGBA()
 
 					tempSum.sumRed += uint32(float64(r) * kernel[i][j])
@@ -106,12 +106,12 @@ func ApplyGaussianBlur(img image.Image) *image.RGBA {
 				}
 
 			}
-			colorRGBA.R = uint8(tempSum.sumRed / 273 >> 8)
-			colorRGBA.B = uint8(tempSum.sumBlue / 273 >> 8)
-			colorRGBA.G = uint8(tempSum.sumGreen / 273 >> 8)
-			colorRGBA.A = uint8(tempSum.sumAlpha / 273 >> 8)
+			colorRGBA.R = uint8(tempSum.sumRed >> 8)
+			colorRGBA.B = uint8(tempSum.sumBlue >> 8)
+			colorRGBA.G = uint8(tempSum.sumGreen >> 8)
+			colorRGBA.A = uint8(tempSum.sumAlpha >> 8)
+			newImage.SetRGBA(x, y, colorRGBA)
 		}
-		newImage.SetRGBA(x, y, colorRGBA)
 	}
 	return newImage
 }
