@@ -56,12 +56,19 @@ func ApplyBoxBlur(img image.Image) *image.RGBA {
 func ApplyGaussianBlur(img image.Image) *image.RGBA {
 	ks := 15
 	k := make([]float64, ks*ks)
+	var kernelSum float64
 	for i := 0; i < ks; i++ {
 		for j := 0; j < ks; j++ {
-			k[i*ks+j] = math.Exp(-(math.Pow(float64(i)-15/2, 2)+math.Pow(float64(j)-15/2, 2))/(2*math.Pow(15/2, 2))) / 2
-
+			weight := math.Exp(-(math.Pow(float64(i)-15/2, 2)+math.Pow(float64(j)-15/2, 2))/(2*math.Pow(15/2, 2))) / 2
+			k[i*ks+j] = weight
+			kernelSum += weight
 		}
 	}
+
+	for i := range k {
+		k[i] /= kernelSum
+	}
+
 	dst := image.NewRGBA(img.Bounds())
 	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
 		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
@@ -80,7 +87,7 @@ func ApplyGaussianBlur(img image.Image) *image.RGBA {
 
 				}
 			}
-			dst.SetRGBA(x, y, color.RGBA{R: uint8(r / 273), G: uint8(g / 273), B: uint8(b / 273), A: uint8(a / 273)})
+			dst.SetRGBA(x, y, color.RGBA{R: uint8(r / 257.0), G: uint8(g / 257.0), B: uint8(b / 257.0), A: uint8(a / 257.0)})
 		}
 	}
 	return dst
