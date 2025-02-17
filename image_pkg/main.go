@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/Desmond123-arch/pkg/effects"
+	"github.com/Desmond123-arch/pkg/transform"
 	"github.com/Desmond123-arch/pkg/utils"
 	"image"
 	_ "image/jpeg"
@@ -22,7 +22,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	newImage := effects.ApplyGrayColor(img)
+	//newImage := effects.ApplyGrayColor(img)
+	newImage := transform.Linear_transform(img, 300, 200)
 	imagename := fmt.Sprintf("newImage.%s", imageType)
 	newImageFile, err := os.Create(imagename)
 	if err != nil {
