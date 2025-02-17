@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	newImage := effects.ApplyGaussianBlur(img)
+	newImage := effects.ApplyGrayColor(img)
 	imagename := fmt.Sprintf("newImage.%s", imageType)
 	newImageFile, err := os.Create(imagename)
 	if err != nil {
