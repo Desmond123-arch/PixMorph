@@ -23,7 +23,8 @@ func main() {
 		panic(err)
 	}
 	//newImage := effects.ApplyGrayColor(img)
-	newImage := transform.Linear_transform(img, 300, 200)
+	//newImage := transform.Linear_transform(img, 500, 500)
+	newImage := transform.RotateImage(img, 90)
 	imagename := fmt.Sprintf("newImage.%s", imageType)
 	newImageFile, err := os.Create(imagename)
 	if err != nil {
