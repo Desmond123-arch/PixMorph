@@ -3,16 +3,16 @@ package models
 
 import "gorm.io/gorm"
 
-type User struct{
+type User struct {
 	gorm.Model
-	ID uint
-	Password string `gorm:"unique;not null"`
-	Username string `gorm:"unique;not null"`
+	ID       uint
+	Password string  `gorm:"not null" form:"password" binding:"required"`
+	Username string  `gorm:"unique;not null" form:"username" binding:"required"`
 	Images   []Image `gorm:"foreignKey:UserID;references:ID"`
 }
 
 type Image struct {
 	gorm.Model
-	UserID uint 
-	Url string `gorm:"unique;not null"`
+	UserID uint
+	Url    string `gorm:"unique;not null"`
 }
