@@ -7,6 +7,7 @@ import (
 	"github.com/Desmond123-arch/PixMorph.git/services"
 	"github.com/Desmond123-arch/PixMorph.git/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -55,7 +56,6 @@ func Login(c *gin.Context) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		}
 	}
-	fmt.Println(foundUser)
 	isValid := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password))
 	fmt.Println(isValid)
 	if isValid != nil {
@@ -64,7 +64,31 @@ func Login(c *gin.Context) {
 	}
 	access_token, err := utils.CreateToken(user.Username)
 	refresh_token, err := utils.CreateRefreshToken(user.Username)
-	c.JSON(200, gin.H{"username": foundUser.Username, "access_token": access_token})
 	c.SetCookie("refresh_token", refresh_token, 3600*24, "/", "", false, true)
-
+	c.JSON(200, gin.H{"username": foundUser.Username, "access_token": access_token})
+}
+func RefreshToken(c *gin.Context) {
+	refresh_token, err := c.Cookie("refresh_token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token not found"})
+	}
+	claim, err := utils.VerifyToken(refresh_token)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadGateway, gin.H{"error": "Invalid refresh token"})
+	}
+	if claims, ok := claim.Claims.(jwt.MapClaims); ok && claim.Valid {
+		username, exists := claims["username"].(string)
+		if !exists {
+			c.JSON(http.StatusBadGateway, gin.H{"error": "Invalid refresh token"})
+		} else {
+			access_token, err := utils.CreateToken(username)
+			new_refresh_token, err := utils.CreateRefreshToken(username)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			}
+			c.SetCookie("refresh_token", new_refresh_token, 3600*24, "/", "", false, true)
+			c.JSON(http.StatusOK, gin.H{"access_token": access_token})
+		}
+	}
 }

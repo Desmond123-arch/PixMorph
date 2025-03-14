@@ -22,6 +22,7 @@ func main() {
 	{
 		authRoutes.POST("/register", auth.Create)
 		authRoutes.POST("/login", auth.Login)
+		authRoutes.GET("/refresh", auth.RefreshToken)
 	}
 	sqlDB, err := storage.Db.DB()
 	if err != nil {
