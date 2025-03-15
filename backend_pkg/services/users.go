@@ -21,6 +21,7 @@ func CreateUser(user models.User) error {
 
 	return nil
 }
+
 func GetUser(user models.User) (models.User, error) {
 	var foundUser models.User
 	result := storage.Db.Where("username = ?", user.Username).First(&foundUser)

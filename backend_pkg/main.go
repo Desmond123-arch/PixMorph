@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Desmond123-arch/PixMorph.git/api/images"
 	"log"
 
 	"github.com/Desmond123-arch/PixMorph.git/api/auth"
@@ -23,6 +24,11 @@ func main() {
 		authRoutes.POST("/register", auth.Create)
 		authRoutes.POST("/login", auth.Login)
 		authRoutes.GET("/refresh", auth.RefreshToken)
+	}
+	//IMAGE ROUTES
+	imageRoutes := r.Group("/images")
+	{
+		imageRoutes.POST("/", images.Upload)
 	}
 	sqlDB, err := storage.Db.DB()
 	if err != nil {
