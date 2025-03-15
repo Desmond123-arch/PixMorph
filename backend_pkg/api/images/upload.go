@@ -2,12 +2,14 @@ package images
 
 import (
 	"fmt"
-	"github.com/Desmond123-arch/PixMorph.git/utils"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	gParser "github.com/Desmond123-arch/GParser"
+	"github.com/Desmond123-arch/PixMorph.git/utils"
+	"github.com/gin-gonic/gin"
 )
 
 type Item struct {
@@ -26,10 +28,12 @@ func Upload(c *gin.Context) {
 
 	url,err := utils.UploadImage(image)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error":"Image upload failed"})
+		return
 	}
-	fmt.Print("The key is ")
-	fmt.Println(url.Key)
+	val, _ := gParser.Parse(url)
+	fmt.Println(val["Key"])
 	//savePath := "./uploads/" + filename
 	//
 	//if err := c.SaveUploadedFile(image, savePath); err != nil {

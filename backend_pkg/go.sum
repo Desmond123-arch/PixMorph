@@ -1,3 +1,5 @@
+github.com/Desmond123-arch/GParser v0.0.0-20250124164522-698a45483b75 h1:zdUxppGCdewxKuWzszAOeD3k8gekGkAwEE2IPsRvyxg=
+github.com/Desmond123-arch/GParser v0.0.0-20250124164522-698a45483b75/go.mod h1:syzgD3YkS4C/+eVqAcHJpMOtVR/N9ZEac44UkLwgUoY=
 github.com/bytedance/sonic v1.12.10 h1:uVCQr6oS5669E9ZVW0HyksTLfNS7Q/9hV6IVS4nEMsI=
 github.com/bytedance/sonic v1.12.10/go.mod h1:uVvFidNmlt9+wa31S1urfwwthTWteBgG0hWuoKAXTx8=
 github.com/bytedance/sonic/loader v0.1.1/go.mod h1:ncP89zfokxS5LZrJxl5z0UJcsk4M4yY2JpfqGeCtNLU=

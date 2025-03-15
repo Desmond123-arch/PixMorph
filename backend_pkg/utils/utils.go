@@ -89,6 +89,5 @@ func UploadImage(img *multipart.FileHeader) (string, error) {
 
 	// fmt.Printf("Response status: %s\n", resp.Status)
 	// fmt.Printf("Response body: %s\n", string(respBody))
-
 	return string(respBody), nil
 }
