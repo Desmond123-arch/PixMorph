@@ -1,8 +1,11 @@
 package main
 
 import (
-	"github.com/Desmond123-arch/PixMorph.git/api/images"
 	"log"
+
+	"github.com/Desmond123-arch/PixMorph.git/api/images"
+	"github.com/Desmond123-arch/PixMorph.git/middlewares"
+	"github.com/joho/godotenv"
 
 	"github.com/Desmond123-arch/PixMorph.git/api/auth"
 	"github.com/Desmond123-arch/PixMorph.git/storage"
@@ -11,9 +14,15 @@ import (
 
 func main() {
 	r := gin.Default()
-
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading ENV")
+		//FIXME: Handle dotenv not working edge case
+		panic("Dotenv is not working correctly")
+	}
+	
 	//DB CONNECTION
-	err := storage.Open()
+	err = storage.Open()
 	if err != nil {
 		log.Fatal("Database connection failed")
 	}
@@ -28,7 +37,8 @@ func main() {
 	//IMAGE ROUTES
 	imageRoutes := r.Group("/images")
 	{
-		imageRoutes.POST("/", images.Upload)
+		imageRoutes.POST("/", middlewares.IsAuthorized(),images.Upload)
+		// imageRoutes.POST("/images/:id/transform", )
 	}
 	sqlDB, err := storage.Db.DB()
 	if err != nil {

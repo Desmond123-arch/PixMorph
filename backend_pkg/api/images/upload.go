@@ -8,6 +8,9 @@ import (
 	"time"
 
 	gParser "github.com/Desmond123-arch/GParser"
+	"github.com/Desmond123-arch/PixMorph.git/models"
+	"github.com/Desmond123-arch/PixMorph.git/services"
+	"github.com/Desmond123-arch/PixMorph.git/storage"
 	"github.com/Desmond123-arch/PixMorph.git/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -24,21 +27,38 @@ func Upload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Image invalid"})
 	}
 	image.Filename = timeString + "-" + filepath.Base(image.Filename)
-	fmt.Println(image.Filename)
 
-	url,err := utils.UploadImage(image)
+	val,err := utils.UploadImage(image)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error":"Image upload failed"})
 		return
 	}
-	val, _ := gParser.Parse(url)
-	fmt.Println(val["Key"])
-	//savePath := "./uploads/" + filename
-	//
-	//if err := c.SaveUploadedFile(image, savePath); err != nil {
-	//	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
-	//	return
-	//}
-	c.JSON(http.StatusOK, gin.H{"image": "good"})
+	url, _ := gParser.Parse(val)
+	image_url := fmt.Sprintf("\n%s/object/public/%s\n", os.Getenv("SUPABASE_URL"), url["Key"])
+	var upImage models.Image
+	rawUsername, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Username not found"})
+		return
+	}
+	username, ok := rawUsername.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid username type"})
+		return
+	}
+	user,err  := services.GetUser(username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		return
+	}
+	upImage.UserID = user.ID
+	upImage.Url = image_url
+	storage.Db.Create(&upImage)
+	c.JSON(http.StatusOK, gin.H{"image": "good one"})
 }
+
+// func Transform(c *gin.Context) {
+// 	image_id := c.Param("id")
+
+// }

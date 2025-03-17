@@ -1,7 +1,9 @@
 package services
 
 import (
+	// "fmt"
 	"fmt"
+
 	"github.com/Desmond123-arch/PixMorph.git/models"
 	"github.com/Desmond123-arch/PixMorph.git/storage"
 	"golang.org/x/crypto/bcrypt"
@@ -22,12 +24,13 @@ func CreateUser(user models.User) error {
 	return nil
 }
 
-func GetUser(user models.User) (models.User, error) {
+func GetUser(username string) (models.User, error) {
+	fmt.Println("Finding the user")
 	var foundUser models.User
-	result := storage.Db.Where("username = ?", user.Username).First(&foundUser)
+	result := storage.Db.Where("username = ?", username).First(&foundUser)
 	if result.Error != nil {
 		return models.User{}, result.Error
 	}
-	fmt.Println(foundUser)
+	// fmt.Println(foundUser)
 	return foundUser, nil
 }

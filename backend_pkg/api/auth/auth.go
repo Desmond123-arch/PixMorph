@@ -22,14 +22,12 @@ func Create(c *gin.Context) {
 
 	err := services.CreateUser(user)
 	if err != nil {
-		fmt.Printf("%#v\n", err)
 		//unwrappedErr := errors.Unwrap(err)
 		var pgErr *pgconn.PgError
 
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 		} else {
-			fmt.Println("Here")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		}
 		return
@@ -49,7 +47,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect parameters"})
 		return
 	}
-	foundUser, err := services.GetUser(user)
+	foundUser, err := services.GetUser(user.Username)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "42P0142P01" {
@@ -57,7 +55,7 @@ func Login(c *gin.Context) {
 		}
 	}
 	isValid := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password))
-	fmt.Println(isValid)
+	
 	if isValid != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Incorrect password"})
 		return
@@ -67,6 +65,7 @@ func Login(c *gin.Context) {
 	c.SetCookie("refresh_token", refresh_token, 3600*24, "/", "", false, true)
 	c.JSON(200, gin.H{"username": foundUser.Username, "access_token": access_token})
 }
+
 func RefreshToken(c *gin.Context) {
 	refresh_token, err := c.Cookie("refresh_token")
 	if err != nil {
