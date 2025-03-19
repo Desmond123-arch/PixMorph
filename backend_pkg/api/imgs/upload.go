@@ -1,7 +1,12 @@
-package images
+package imgs
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	_ "image/jpeg"
+    _ "image/png"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -58,7 +63,25 @@ func Upload(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"image": "good one"})
 }
 
-// func Transform(c *gin.Context) {
-// 	image_id := c.Param("id")
+func Transform(c *gin.Context) {
+	image_id := c.Param("id")
+	fmt.Println(image_id)
+	services.ListAllImages()
+	image_data, err := services.SearchImage(image_id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error":"Image does not exist"})
+		return
+	}
 
-// }
+	downloaded_image, err := services.DownloadImage(image_data.Url)
+	if err != nil {
+		log.Fatal(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"Internal Server error"})
+	}
+	_, format, err := image.Decode(bytes.NewReader(downloaded_image))
+	if err != nil {
+		log.Fatal(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"Internal Server error"})
+	}
+	fmt.Println(format)
+}

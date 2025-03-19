@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/Desmond123-arch/PixMorph.git/api/images"
 	"github.com/Desmond123-arch/PixMorph.git/middlewares"
 	"github.com/joho/godotenv"
 
 	"github.com/Desmond123-arch/PixMorph.git/api/auth"
+	"github.com/Desmond123-arch/PixMorph.git/api/imgs"
 	"github.com/Desmond123-arch/PixMorph.git/storage"
 	"github.com/gin-gonic/gin"
 )
@@ -37,8 +37,8 @@ func main() {
 	//IMAGE ROUTES
 	imageRoutes := r.Group("/images")
 	{
-		imageRoutes.POST("/", middlewares.IsAuthorized(),images.Upload)
-		// imageRoutes.POST("/images/:id/transform", )
+		imageRoutes.POST("/", middlewares.IsAuthorized(),imgs.Upload)
+		imageRoutes.POST("/:id/transform", middlewares.IsAuthorized(), imgs.Transform)
 	}
 	sqlDB, err := storage.Db.DB()
 	if err != nil {

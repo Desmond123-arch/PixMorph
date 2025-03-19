@@ -17,3 +17,25 @@ type Image struct {
 	UserID uint
 	Url    string `gorm:"unique;not null"`
 }
+
+type resize struct{
+	width int
+	height int
+}
+type crop struct {
+	width int
+	height int
+	x int
+	y int
+}
+type filters struct{
+	greyscale bool
+	sepia bool
+}
+type Transform struct {
+	resize resize
+	crop crop
+	filters filters
+	rotate int
+	format string
+}

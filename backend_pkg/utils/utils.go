@@ -39,6 +39,7 @@ func CreateRefreshToken(username string) (string, error) {
 }
 
 func VerifyToken(tokenString string) (*jwt.Token, error) {
+	fmt.Println("Verifying token")
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		secretKey := os.Getenv("SECRET_KEY")
 		return []byte(secretKey), nil
@@ -49,6 +50,7 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 	if !token.Valid {
 		return nil, errors.New("invalid token")
 	}
+	
 	return token, nil
 }
 

@@ -36,6 +36,7 @@ func Create(c *gin.Context) {
 	refresh_token, err := utils.CreateRefreshToken(user.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"username": user.Username, "access_token": access_token})
 	c.SetCookie("refresh_token", refresh_token, 3600*24, "/", "", false, true)
@@ -52,6 +53,7 @@ func Login(c *gin.Context) {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "42P0142P01" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+			return
 		}
 	}
 	isValid := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password))
@@ -70,21 +72,26 @@ func RefreshToken(c *gin.Context) {
 	refresh_token, err := c.Cookie("refresh_token")
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Refresh token not found"})
+		return
 	}
+	fmt.Println("Got here")
 	claim, err := utils.VerifyToken(refresh_token)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadGateway, gin.H{"error": "Invalid refresh token"})
+		return
 	}
 	if claims, ok := claim.Claims.(jwt.MapClaims); ok && claim.Valid {
 		username, exists := claims["username"].(string)
 		if !exists {
 			c.JSON(http.StatusBadGateway, gin.H{"error": "Invalid refresh token"})
+			return
 		} else {
 			access_token, err := utils.CreateToken(username)
 			new_refresh_token, err := utils.CreateRefreshToken(username)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+				return
 			}
 			c.SetCookie("refresh_token", new_refresh_token, 3600*24, "/", "", false, true)
 			c.JSON(http.StatusOK, gin.H{"access_token": access_token})
